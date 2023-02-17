@@ -1,0 +1,72 @@
+---
+title: "Data 607 Project 1"
+author: "Miguel Gomez"
+date: "2023-02-08"
+output: html_document
+---
+<font size="5"> 
+##Loading libraries and pulling txt file from the internet
+
+
+```{r load-packages, message=FALSE}
+library(readr)
+library(stringr)
+
+link <- 'https://learn-us-east-1-prod-fleet02-xythos.content.blackboardcdn.com/61aab133e7df2/7645617?X-Blackboard-S3-Bucket=learn-us-east-1-prod-fleet01-xythos&X-Blackboard-Expiration=1676667600000&X-Blackboard-Signature=lsk3p9Y8J4gFrY14b5JhYvKsY3cR8HrDwR1aiHZ0ilQ%3D&X-Blackboard-Client-Id=100211&X-Blackboard-S3-Region=us-east-1&response-cache-control=private%2C%20max-age%3D21600&response-content-disposition=inline%3B%20filename%2A%3DUTF-8%27%27tournamentinfo.txt&response-content-type=text%2Fplain&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEMf%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaCXVzLWVhc3QtMSJGMEQCIBZsjHdEtzvejIkoB4B%2F6WKdGmEVjblt%2Bx1KxbdQDei5AiB3dcIHfw5j0tLdlKRS%2FjhorRAlK%2BttmGCdfy9pp6pbvirNBAhgEAIaDDYzNTU2NzkyNDE4MyIMTsRdobG2t6eKk3FVKqoEkPwSRQCA882qWdSusqmhyvcUzy75SofBqZIT7Z%2BvVW09%2BJbSOlYdz%2F9a8%2BzrGuZfwaZVPmqwIApIDNKb4TOZyHaDPYtuQkcXtrBzt3j5mwEm6qL557M7hSdzPwvfu0j3TqRDXmfnhvRCmfHHN9K2lpTvMR3Xm3IaThwbOHIJJDNmUjBq7NlTvcDC%2BGyRXHaup4rHiEvxXPl9CvUvZv89HSmCwUNRIhqSJzsLDB2RubEVJUMWTR80qJ%2FwH02YRw1j0HFieADJHExkMpW9ICdEGRPIeUnwWH%2F5WiTn0clMAjB%2BQtKx0xM6N4tCi5nHmSlHMVY8Onp%2BDs0e%2FM%2BryhQwd49p9nr8kaVHiJsft40d5%2B3onENohVkG8iog6xH8lj%2FGT0xCkYtY6Sp9X0yvpQgUtgHOUfGjVdR9oEYrNLU25GVl%2BhtmDw94yVEomaODImI6LmXX%2BoAU1F9%2FeFBma26QrsLZsnWvd43v4onKizzCKQ2Bxb0D6ADJmnakZAsaCBtYgefwUMS99i2OrIl4OAMGHB0cuUEKHoWA33DbeLuZFFY0aOMJqr%2BAnxYMXReKNiKuoXFdSfvolIdHjzhIdERS5%2FuUcrsFx26pN3rtf3WHXElUJ%2FdGUQDDP35SQiQX6c1KARGIdDQgbTtbdwTjN2RP5qWz1PDnz8lDIihnOzrQayTGmMrFv1w5F3aJ2eLxbFQVhog%2Fnl3sez7tRzfhrjz4CgUmITZG%2BnMGuE4wga6%2BnwY6qgGtzsQMy8lqziu9j%2F5Q93YMWo%2BA2Flm7ccfyW9yf3Lpn%2FaCsIa55sStp2kv0ePYOPtxn4UHo6e%2B5NO%2FpR%2FeyqBiDjKfaRHAhpNk%2BMoj34thdlsLIGfmWnob3KgTwS2Sl%2B4CiU7cROtCdBfOUMa9ISPiYHzR23ANgSGhrnnF3D%2FZcyvKXC%2B1hVR3Y1w7ALLDdCnff7GMckIyh5pUz8%2FtBWuFD5qC31ZlfO2nHQ%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230217T150000Z&X-Amz-SignedHeaders=host&X-Amz-Expires=21600&X-Amz-Credential=ASIAZH6WM4PLRCQLCJHE%2F20230217%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=b39e5b1745d1c97eb09e3c4e47d9d4fe3da3de67af3d419ab0d811e97991216e' 
+
+data1 <- read_csv(file = link,col_names = FALSE)
+```
+
+##Viewing data
+
+```{r}
+data1
+```
+
+##Separated data into 3 matrices
+
+```{r}
+data2 <- matrix(unlist(data1), byrow=TRUE)
+
+data3 <- data2[seq(5,length(data2),3)]
+head(data3)
+
+data4 <- data2[seq(6,length(data2),3)]
+head(data4)
+```
+
+##Using regex to extract data
+
+```{r}
+id <- as.numeric(str_extract(data3, '\\d+'))
+n <- str_extract(data3, '[A-z].{1,32}') 
+n <- str_trim(str_extract(n, '.+\\s{2,}'))
+st <- str_extract(data4, '[A-Z]{2}') 
+numofpoints <- as.numeric(str_extract(data3, '\\d+\\.\\d'))
+prating <- str_extract(data4, 'R:.{8,}-')
+prating <- as.numeric(str_extract(prating, '\\d{1,4}'))
+rs <- str_extract_all(data3, '[A-Z]\\s{2,}\\d+')
+rs <- str_extract_all(rs, '\\d+')
+```
+
+##Average Pre Chess Rating of Opponents
+
+```{r}
+avg1 <- c()
+for (i in c(1:length(rs))){
+  avg1[i] <- round(mean(prating[as.numeric(rs[[i]])]),0)
+}
+avg1
+```
+##Creating Data Frame with column names
+
+```{r}
+P1 <- data.frame(id,n,st,numofpoints,prating,avg1)
+colnames(P1) <- c("ID","Name", "State", "TotalPts", "Pre-rating", "Avg Pre Chess Rating of OP" )
+P1
+```
+
+##Creating the csv file
+```{r}
+write_csv(P1, 'P1  .csv' , append = FALSE)
+```
