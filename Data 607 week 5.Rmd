@@ -1,0 +1,67 @@
+---
+title: "607 Assignment 5"
+author: "Miguel Gomez"
+date: "2023-02-20"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+<font size="5">
+Library I used to connect to mysql database and tidy up the data.
+
+```{r}
+library(RMySQL)
+library(plyr)
+library(ggplot2)
+library(dplyr)
+```
+<font size="5">
+I started off by connecting to mysql database and viewing the data from my sql database
+
+```{r include=FALSE}
+mysqlconnection = dbConnect(RMySQL::MySQL(),
+dbname='data607week5',
+host='127.0.0.1',
+port=3306,
+user='root',
+password='enteryourownpassword') 
+```
+```{r}
+dbListTables(mysqlconnection)
+```
+
+
+```{r}
+result = dbSendQuery(mysqlconnection, "SELECT arrival_delays.airlines, arrival_delays.city, arrival_delays.delays, arrival_delays.on_time
+FROM arrival_delays")
+```
+
+```{r}
+data.frame = fetch(result)
+```
+```{r}
+print(data.frame) 
+```
+
+```{r}
+data1 <- ggplot(data=data.frame, aes(x=city, y=delays, fill=airlines))
+    data1 <- data1 +  ggtitle('Delayed Flights') + theme(plot.title = element_text(hjust = 0.5))
+    data1 <- data1 + geom_text(aes(label=delays), vjust=-0.2,
+                            position = position_dodge(0.9), size=3.5) +
+                            scale_fill_brewer(palette="Paired") +
+            geom_bar(stat="identity", position=position_dodge()) 
+data1
+```
+
+<font size="5">
+I plotted the delay flights per destination for both airlines. From the histogram, we can see that AM West has more delays for each destination except for Seattle. What the histogram doesn't show is the total flights per destination for both airlines.
+
+```{r}
+ddply(data.frame, "airlines", transform, percent = delays/sum(delays,on_time)) %>% 
+  group_by(airlines)  %>% 
+  dplyr::summarise(delay_percentage = sum(percent)) 
+
+```
+<font size="5">
+I calculated the total delay percentage for both Airlines and figured out that Alaska flights are delayed by 13% while AM West flights are delayed by 10%.
