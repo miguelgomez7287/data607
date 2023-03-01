@@ -1,0 +1,59 @@
+---
+title: "Data 607 project 2_2"
+author: "Miguel Gomez"
+date: "2023-02-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+  library(tidyr) 
+  library(tidyverse)
+  library(stringr)
+
+```
+<font size="5">
+The second data set I decided to use was: https://bbhosted.cuny.edu/webapps/discussionboard/do/message?action=list_messages&course_id=_2230790_1&nav=discussion_board_entry&conf_id=_2679745_1&forum_id=_3575059_1&message_id=_65475653_1
+
+```{r}
+data1 <- read.csv("C:\\Users\\hotga\\Desktop\\student_results.csv", header=TRUE, stringsAsFactors=FALSE)
+
+data1
+```
+<font size="5"> 
+To tidy this data, I want to split "sex.and.age" into two columns using stringr.
+```{r}
+data1[c('sex', 'age')] <- str_split_fixed(data1$sex.and.age, '_', 2)
+data1
+```
+<font size="5">
+I removed the original "sex.and.age" column.
+
+```{r}
+data2 <- data1[c('name', 'phone', 'sex','age', 'test.number','term.1' , 'term.2', 'term.3')]
+data2
+```
+
+<font size="5">
+I calculated the term average for each person and added it as the last column
+```{r}
+data2$average <- rowMeans(data2[ , c(6,7,8)], na.rm=TRUE)
+data2
+```
+
+<font size="5">
+Test 2 had the highest average at 79.26 vs test 1 at 79.20.
+```{r}
+total <- aggregate(data2$average, list(data2$test.number), FUN=mean)
+total
+```
+
+<font size="5">
+Linda had the highest average for both test combined.
+```{r}
+total2 <- aggregate(data2$average, list(data2$name), FUN=mean)
+total2
+```
