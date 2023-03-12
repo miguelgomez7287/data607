@@ -1,0 +1,179 @@
+---
+title: "Data 607 Week 7"
+author: "Miguel Gomez"
+date: "2023-03-12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(jsonlite)
+library(xml2)
+library(rvest)
+library(tibble)
+library(DT)
+
+```
+
+<font size="2">
+Pick three of your favorite books on one of your favorite subjects. At least one of the books should have more
+than one author. For each book, include the title, authors, and two or three other attributes that you find
+interesting.
+
+Take the information that you’ve selected about these three books, and separately create three files which
+store the book’s information in HTML (using an html table), XML, and JSON formats (e.g. “books.html”,
+“books.xml”, and “books.json”). To help you better understand the different file structures, I’d prefer that you
+create each of these files “by hand” unless you’re already very comfortable with the file formats.
+
+Write R code, using your packages of choice, to load the information from each of the three sources into
+separate R data frames. Are the three data frames identical?
+
+Your deliverable is the three source files and the R code. If you can, package your assignment solution up into
+an .Rmd file and publish to rpubs.com. [This will also require finding a way to make your three text files
+accessible from the web].
+
+<font size="5">
+HTML Code
+```
+<html>
+<head>
+<title>Books</title>
+</head>
+
+<body>
+
+<table>
+  <tr>
+    <th>Title</th>
+    <th>Author</th>
+    <th>Year Published</th>
+	<th>Genre</th>
+  </tr>
+  <tr>
+    <td>Outliers</td>
+    <td>Malcolm Gladwell</td>
+    <td>2008</td>
+	<td>Self-help</td>
+  </tr>
+  <tr>
+    <td>Rich Dad Poor Dad</td>
+    <td>Robert Kiyosaki, Sharon Lechter</td>
+    <td>1997</td>
+	<td>Non-Fiction</td>
+  </tr>
+  <tr>
+    <td>Nineteen Eighty-Four</td>
+    <td>George Orwell</td>
+    <td>1949</td>
+	<td>Science Fiction</td>
+  </tr>
+</table>
+
+</body>
+</html>
+```
+<font size="5">
+Pulling HTML data from github. 
+```{r}
+html1 <- read_html("https://raw.githubusercontent.com/miguelgomez7287/data607/main/books.html")
+html2 <- html_table(html1)[[1]]
+names(html2) <- c("title", "author", "year", "genre")
+datatable(html2)
+```
+<font size="5">
+XML Code
+```
+<?xml version="1.0" encoding="UTF-8"?>
+  <books>
+  <book>
+    <title>
+      Outliers
+    </title>
+    <author>
+      Malcolm Gladwell
+    </author>
+    <year>
+      2008
+    </year>
+	<genre>
+	Self-help
+	</genre>
+  </book>
+  <book>
+    <title>
+      Rich Dad Poor Dad
+    </title>
+    <author>
+      Robert Kiyosaki, Sharon Lechter
+    </author>
+    <year>
+      1997
+    </year>
+	<genre>
+	Non-Fiction
+	</genre>
+  </book>
+  <book>
+    <title>
+      Nineteen Eighty-Four
+    </title>
+    <author>
+      George Orwell
+    </author>
+    <year>
+      1949
+    </year>
+	<genre>
+	Science Fiction
+	</genre>
+  </book>
+  </books>
+```
+<font size="5">
+Pulling XML data from github. 
+```{r}
+book1 <- read_xml("https://raw.githubusercontent.com/miguelgomez7287/data607/main/books.xml")
+title1 <- xml_text(xml_find_all(book1, xpath = "//title"))
+author1 <- xml_text(xml_find_all(book1, xpath = "//author"))
+year1 <- xml_text(xml_find_all(book1, xpath = "//year"))
+genre1 <- xml_text(xml_find_all(book1, xpath = "//genre"))
+
+xml1 <- tibble(title = title1, author = author1, year = year1, genre = genre1)
+
+datatable(xml1)
+```
+<font size="5">
+JSON Code
+```
+{
+  "books": [
+    {
+      "title": "Outliers",
+      "author": "Malcolm Gladwell",
+      "year": "2008"
+	  "genre": "Self-Help"
+    },
+    {
+      "title": "Rich Dad Poor Dad",
+      "author": "Robert Kiyosaki, Sharon Lechter",
+      "year": "1997"
+	  "genre":"Non-Fiction"
+    },
+    {
+      "title": "Nineteen Eighty-Four",
+      "author": "George Orwell",
+      "year": "1949"
+	  "genre":"Science Fiction"
+    }
+  ]
+}
+```
+<font size="5">
+Pulling JSON data from github. 
+```{r}
+books <- fromJSON("https://raw.githubusercontent.com/miguelgomez7287/data607/main/booksss.json")|>
+    as.data.frame() 
+names(books) <- c("title", "author", "year", "genre")
+datatable(books)
+```
+<font size="5">
+All three data frames are identical.
