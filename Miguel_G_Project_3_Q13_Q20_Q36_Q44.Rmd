@@ -1,0 +1,263 @@
+---
+title: "project3_cleaning"
+output: html_document
+date: "2023-03-07"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Libraries
+
+```{r}
+library(tidyverse)
+library(forcats)
+```
+
+Data import
+
+
+```{r}
+df <- read.csv("https://raw.githubusercontent.com/LeJQC/MSDS/main/DATA%20607/Project%203/kaggle_survey_2022_responses.csv",
+               na.strings = c("", "NA"))
+```
+
+
+```{r}
+#clear question text from first row
+df <- df[-1,]
+df <- df %>% mutate_all(na_if,"nan")
+df %>% drop_na()
+```
+
+```{r}
+graph_multicolumn_q <- function(og_df, q_list, 
+                                q_name, val_label,
+                                q_text) {
+  #Create limited df with only that question's columns
+  q_df <- df %>%
+     select(all_of(q_list))
+  
+  #Create long-pivoted df for graphing
+  q_df1 <- q_df %>%
+    pivot_longer(
+    cols = everything(),
+    names_to = q_name,
+    values_to = val_label,
+    values_drop_na = TRUE)
+  
+  #Produce df of value counts
+  q_df1_count <- q_df1 %>%
+    count(!!sym(val_label))
+
+  
+  #Graph result
+  
+  q_df1 %>%
+    ggplot(aes(x=fct_rev(fct_infreq(!!sym(val_label)))))+
+    geom_bar()+
+    coord_flip()+
+    theme_minimal()+
+    ggtitle(q_text)+
+    xlab(val_label)
+  
+}
+```
+
+```{r}
+#define column lists for each question
+
+q13_cols <-  c('Q13_1','Q13_2','Q13_3','Q13_4',
+               'Q13_5','Q13_6','Q13_7','Q13_8','Q13_9','Q13_10','Q13_11',
+               'Q13_12','Q13_13','Q13_14')
+
+q20_cols <-  c('Q20_1','Q20_2','Q20_3','Q20_4','Q20_5','Q20_6')
+
+q36_cols <-  c('Q36_1','Q36_2','Q36_3','Q36_4','Q36_5',
+               'Q36_6','Q36_7','Q36_8','Q36_9','Q36_10','Q36_11','Q36_12',
+               'Q36_13','Q36_14','Q36_15')
+
+q44_cols <-  c('Q44_1','Q44_2','Q44_3','Q44_4','Q44_5','Q44_6',
+               'Q44_7','Q44_8','Q44_9','Q44_10','Q44_11','Q44_12')
+```
+
+```{r}
+graph_multicolumn_q(df,
+                    q13_cols,
+                    'Question 13',
+                    'Platform',
+                    'Integrated Development Environments')
+```
+
+```{r}
+graph_multicolumn_q(df,
+                    q20_cols,
+                    'Question 20',
+                    'Platform',
+                    'Natural Language Processing Methods')
+```
+
+```{r}
+graph_multicolumn_q(df,
+                    q36_cols,
+                    'Question 36',
+                    'Product',
+                    'Business Intelligence Tools')
+```
+
+```{r}
+graph_multicolumn_q(df,
+                    q44_cols,
+                    'Question 44',
+                    'Platform',
+                    'Media Sources')
+```
+
+
+TESTING FACTORED GRAPH
+
+```{r}
+
+graph_cross_analysis <- function(og_df, q_demo, q_list, q_name, val_label, q_text) {
+  q_df <- og_df %>%
+    select(all_of(c(q_demo, q_list)))
+  
+  q_df1 <- q_df %>%
+    pivot_longer(
+      cols= -1,
+      names_to=q_name,
+      values_to=val_label,
+      values_drop_na=TRUE
+  )
+  
+  q_df2 <- q_df1[complete.cases(q_df1), ]
+  
+  q_df2 %>%
+    ggplot(aes(x=fct_rev(fct_infreq(!!sym(val_label))), fill = as.factor(!!sym(q_demo))))+
+    facet_wrap(q_demo)+
+    coord_flip()+
+    geom_bar()+
+    theme(axis.text.x = element_text(size = 7))+
+    theme(axis.text.y = element_text(size = 7))+
+    theme(legend.position = "none")+
+    labs(y= "Count", x = val_label)+
+    ggtitle(q_text)
+    
+    
+}
+
+```
+
+
+```{r, fig.width=9, fig.height=6}
+graph_cross_analysis(og_df = df, 
+                     q_demo = 'Q11', 
+                     q_list = q44_cols, 
+                     q_name = 'Question 44', 
+                     val_label = 'Platform',
+                     q_text = 'Media Sources')
+```
+```{r, fig.width=12, fig.height=10}
+graph_cross_analysis(og_df = df, 
+                     q_demo ='Q23', 
+                     q_list = q44_cols, 
+                     q_name = 'Question 44', 
+                     val_label = 'Platform',
+                     q_text = 'Media Sources')
+```
+
+```{r, fig.width=10, fig.height=15}
+graph_cross_analysis(og_df = df, 
+                     q_demo = 'Q29', 
+                     q_list = q44_cols, 
+                     q_name = 'Question 44', 
+                     val_label = 'Platform',
+                     q_text = 'Media Sources')
+```
+
+```{r, fig.width=10, fig.height=15}
+graph_cross_analysis(og_df = df, 
+                     q_demo = 'Q11', 
+                     q_list = q13_cols, 
+                     q_name = 'Question 13', 
+                     val_label = 'Platform',
+                     q_text = 'Integrated Development Environments')
+```
+
+```{r, fig.width=10, fig.height=8}
+graph_cross_analysis(og_df = df, 
+                     q_demo = 'Q23', 
+                     q_list = q13_cols, 
+                     q_name = 'Question 13', 
+                     val_label = 'Platform',
+                     q_text = 'Integrated Development Environments')
+```
+
+```{r, fig.width=10, fig.height=15}
+graph_cross_analysis(og_df = df, 
+                     q_demo = 'Q29', 
+                     q_list = q13_cols, 
+                     q_name = 'Question 13', 
+                     val_label = 'Platform',
+                     q_text = 'Integrated Development Environments')
+```
+
+```{r, fig.width=10, fig.height=15}
+graph_cross_analysis(og_df = df, 
+                     q_demo = 'Q11', 
+                     q_list = q20_cols, 
+                     q_name = 'Question 20', 
+                     val_label = 'Platform',
+                     q_text = 'Natural Language Processing Methods')
+```
+
+```{r, fig.width=10, fig.height=15}
+graph_cross_analysis(og_df = df, 
+                     q_demo = 'Q23', 
+                     q_list = q20_cols, 
+                     q_name = 'Question 20', 
+                     val_label = 'Platform',
+                     q_text = 'Natural Language Processing Methods')
+```
+
+```{r, fig.width=10, fig.height=15}
+graph_cross_analysis(og_df = df, 
+                     q_demo = 'Q29', 
+                     q_list = q20_cols, 
+                     q_name = 'Question 20', 
+                     val_label = 'Platform',
+                     q_text = 'Natural Language Processing Methods')
+```
+
+```{r, fig.width=10, fig.height=15}
+graph_cross_analysis(og_df = df, 
+                     q_demo = 'Q29', 
+                     q_list = q36_cols, 
+                     q_name = 'Question 36', 
+                     val_label = 'Platform',
+                     q_text = 'Business Intelligence Tools')
+```
+
+```{r, fig.width=10, fig.height=15}
+graph_cross_analysis(og_df = df, 
+                     q_demo = 'Q11', 
+                     q_list = q36_cols, 
+                     q_name = 'Question 36', 
+                     val_label = 'Platform',
+                     q_text = 'Business Intelligence Tools')
+```
+
+```{r, fig.width=10, fig.height=15}
+graph_cross_analysis(og_df = df, 
+                     q_demo = 'Q23', 
+                     q_list = q36_cols, 
+                     q_name = 'Question 36', 
+                     val_label = 'Platform',
+                     q_text = 'Business Intelligence Tools')
+
+```
+
+
+
+```
