@@ -1,0 +1,46 @@
+---
+title: "Data 607 week 9"
+author: "Miguel Gomez"
+date: "2023-03-22"
+output: html_document
+---
+
+```{r load-packages, message=FALSE}
+library("tidyverse")
+library("jsonlite")
+library("httr")
+```
+
+<font size="5">
+I started off by connecting to the API.
+
+```{r}
+url <- paste("https://api.nytimes.com/svc/topstories/v2/world.json?api-key=4ANP7YXVVbGoa5OxW4fqHOX5BHHYUfB1")
+
+data1 <- GET(url)
+
+data1$status_code
+```
+
+<font size="5">
+Viewing the data I pulled from the API.
+
+```{r}
+summary(data1)
+```
+
+```{r}
+data2 <- content(data1, as = "text")
+```
+
+<font size="5">
+Converting the data I pulled from the API to a data frame.
+
+```{r}
+data3 <- data2 %>% 
+  fromJSON() %>% 
+  as.data.frame()
+
+colnames(data3)
+```
+
