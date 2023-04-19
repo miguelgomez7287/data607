@@ -1,0 +1,35 @@
+---
+title: "Data 607 Week 11 Discussion"
+author: "Miguel Gomez"
+date: "2023-04-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+## Introduction
+
+Since high-school, I've enjoyed spending  time on online platforms people can sell new or used items. Platforms like eBay, Craiglist, Offerup and Facebook Marketplace. Throughout the years, I've seen the usage rate of each platform either increase or decrease. I'm going to focus on Offerup because at one point they were my favorite but unfortunately,  their usage rate has dramatically decreased. 
+
+When you're into expensive hobbies like car/motorcycle building or video games, you want the best deal possible. I figured out one way of getting the best deal was by purchasing lightly used items. I also needed parts last minute and did not want to wait for shipping. I started to use Offerup to buy and sell products. This allowed me to meet directly with the seller and possibly trade instead of having to use cash. After using Offerup several times, their recommendation system had most of the items I was interested in on my listings page. I would even get notifications when certain products were posted. This allowed me to be the first one to contact the seller and secure the product. At one point, Offerup had a great usage rate and I would have several purchasing options. 
+
+## Scenario Analysis
+
+1. Who are your target users?
+- Sellers and people who are looking for a good deal.
+
+2. What are their key goals?
+- Maintain a high usage rate.
+- Sell boosted posts (Sellers buy boosted posts to have their listing show up more often)
+- Ensure listings page is tailored to users.
+
+3. How can you help accomplish those goals?
+- Offerup currently isn't doing too good because of their decrease in usage rate. It's pretty hard to find items for sale and someone that would actually respond to your message. I would resolve this issue by rewarding frequent sellers with free boosted posts. In addition, I would invest in marketing. 
+
+## Recommendations
+
+- A recommendation I have for Offer up is to allow users to integrate their accounts with social media. This will help buyers and sellers become more confident for live meetups and make it easier to login.
+
+- Another recommendation I have is to reward frequent sellers and buyers.
