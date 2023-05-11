@@ -1,0 +1,398 @@
+---
+title: "Data 607 Final Project"
+author: "Miguel Gomez"
+date: "2023-05-03"
+output: html_document
+---
+
+```{r include=FALSE}
+library(dplyr)
+library(plotly)
+library(highcharter)
+library(viridisLite)
+library(xts)
+library(viridis)
+library(ggplot2)
+library(ggthemes)
+library(scales)
+library(knitr)
+library(tidyverse)
+library(rvest)
+library(ggforce)
+library(ggmap)
+library(lubridate)
+library(reactable)
+library(janitor)
+library(tm)
+library(usdata)
+library(sqldf)
+```
+
+```{r}
+data <- read.csv("https://raw.githubusercontent.com/washingtonpost/data-police-shootings/master/v1/fatal-police-shootings-data.csv")
+head(data)
+```
+
+<font size="5"> 
+Transforming the race codes to make it easier to read. 
+
+```{r}
+data$armed_logic <- ifelse(data$armed=="unarmed" | data$armed=="undetermined"| data$armed=="unknown weapon","unarmed","armed")# Creating categories for NA
+data$armed_logic <- as.factor(data$armed_logic) #Converting to factor
+data$race[data$race == "W"] <- "White" #Generating the race Desc
+data$race[data$race == "B"] <- "Black"
+data$race[data$race == "H"] <- "Hispanic/Latino"
+data$race[data$race == "O"] <- "Other"
+data$race[data$race == "A"] <- "Asian/Pacific Islander"
+data$race[data$race == "N"] <- "Native American"
+data$race[data$race == ""] <- "Unrecorded"
+```
+
+
+<font size="5"> 
+Extracting the Year from the dates. 
+
+
+
+```{r}
+data$year <- format(as.Date(data$date, format="%Y-%m-%d"),"%Y")
+head(data)
+```
+
+
+<font size="5"> 
+Replacing the missing values with "Unrecorded" 
+
+
+```{r}
+data$race[data$race == ""] <- "Unrecorded"
+data$gender[data$gender == ""] <-  "Unrecorded"
+data$flee[data$flee == ""] <- "Unrecorded"
+data$armed[data$armed == ""] <- "Unrecorded"
+```
+
+
+<font size="5"> 
+Replacing the missing values in the age column with the mean
+
+
+
+```{r}
+data[is.na(data$age) == TRUE, "age"] = round(mean(data$age, na.rm = TRUE))
+
+```
+
+<font size="5"> 
+Formating Date
+
+
+```{r}
+data$date <- as.Date(data$date, "%m/%d/%Y ")
+```
+
+
+<font size="5"> 
+
+Counts how many times each ethnicity  shows up
+
+
+```{r}
+racecounts <- table(data$race) 
+racecounts
+```
+
+<font size="5"> 
+
+Calculates race counts percentages
+
+
+
+```{r}
+racecountsratio <- racecounts/sum(racecounts)
+racecountsratio
+```
+
+<font size="5"> 
+
+Converts ethnicity counts to percentages
+
+
+```{r}
+pct <- round(racecountsratio/sum(racecountsratio)*100)
+pct
+```
+
+<font size="5"> 
+
+Adds percentages to labels
+
+```{r}
+racecountslabels <- c("Asian/Pacific Islander", "Black", "Hispanic/Latino", "Native American",  "Other",  "Unrecorded", "White")
+racecountslabels <- paste(racecountslabels, pct)
+racecountslabels
+```
+
+<font size="5"> 
+
+Adds % to labels
+
+
+```{r}
+racecountslabels  <- paste(racecountslabels, "%", sep="")
+
+```
+
+
+<font size="5"> 
+This graph breaks down the people killed by race/ethnicity.
+
+```{r, fig.width=14, fig.height=8}
+barplot(racecounts, horiz=T, xlim = c(0,4000) ,las=.5,  main ="2015-2021 Police Killings by Race/Ethnicity", xlab= "Race/Ethnicity",  cex.names=.5)
+```
+
+<font size="5"> 
+I decided to include a pie chart that breaks down the people killed by Race. Even though majority of the police killings occurred in neighborhoods that are poorer and blacker, 51% of the people killed were white. 
+
+
+```{r, fig.width=15, fig.height=13.5}
+pie(pct, labels = racecountslabels, main = "2015-2021 Police Killings by Race/Ethnicity")
+```
+
+
+```{r}
+us_shootings_race_year = data %>% 
+  group_by(year, race) %>% 
+  tally(name = "Total_Count")
+
+
+  ggplot(data = us_shootings_race_year, aes(x = year, y = Total_Count,fill=race,group=1)) +
+  geom_histogram(aes(fill = race), color = "darkred", stat = "identity", show.legend = FALSE, alpha = 0.9) +
+  geom_line() +
+  labs(title = "Distribution of Victims of Different Race Killed per Year :",
+                x = "Year of Shootout", y = "Count of Victims") +
+facet_wrap(race ~ ., scales = "free", ncol = 2, strip.position = "right") +
+geom_text(aes(label = Total_Count, vjust = 1.2)) +
+  theme_tufte() + 
+  theme(plot.title = element_text(face = "bold", size = 18),
+                 strip.text = element_text(face = "bold", size = 11),
+                 axis.title = element_text(face = "bold", size = 14),
+                 axis.text.y = element_text(face = "bold", size = 9),
+                 axis.text.x = element_text(face = "bold.italic", size = 5),
+                 panel.grid.major.y = element_line(colour = "lightgrey"))+scale_fill_brewer( palette = "Set3")
+```
+
+
+
+<font size="5"> 
+
+This histograms shows the death rate by race and ethnicity for 2015-2022. The highest number of victims were white but we have to factor in US population. 
+
+According to the census, the population estimate for 2021 was 332,031,554 people.
+
+
+```{r}
+knitr::include_graphics("C:\\Users\\hotga\\Pictures\\Screenshots\\White.png")
+```
+
+<font size="5"> 
+75.8% were white (~ 251,679,917)
+
+
+```{r}
+ knitr::include_graphics("C:\\Users\\hotga\\Pictures\\Screenshots\\Hispanic.png")
+```
+
+---<font size="5"> 
+18.9% were Hispanic (~ 62,753,963)
+
+```{r}
+ knitr::include_graphics("C:\\Users\\hotga\\Pictures\\Screenshots\\Black.png")
+```
+
+
+<font size="5"> 
+13.6% were Black (~ 45,156,291)
+
+
+
+<font size="5"> 
+2015-2021 Distribution of death rate by race and ethnicity:
+
+```{r}
+White1=3074/251679917
+Hispanic1 = 1113/62753963
+Black1 = 1625/45156291 
+White1
+Hispanic1
+Black1
+```
+
+
+```{r}
+White1 = 1.22
+Hispanic1 = 1.77
+Black1 = 3.59
+```
+
+<font size="5"> 
+Created a table to store 2015-2021 Distribution of death rate by race and ethnicity:
+
+
+```{r}
+Race_ethnicity <-c("White", "Hispanic", "Black")
+values <- c(White1,Hispanic1,Black1)
+data2<- data.frame(Race_ethnicity, values)
+data2
+```
+
+```{r}
+p<-ggplot(data=data2, aes(x=values, y=Race_ethnicity)) +
+  geom_bar(stat="identity")+
+  geom_text(aes(label=values), vjust=-3.5, size=5.5)
+p
+```
+
+<font size="5"> 
+After calculating the distribution of deaths by Race and ethnicity from 2015-2021, we can see that black people get killed the most by police at a rate of 3.59 for every 100,000 while people get killed at a rate of 1.22 and Hispanic at 1.77.
+
+
+<font size="5"> 
+Location Analysis :
+
+
+<font size="5"> 
+I used janitor’s tabyl() function to count how often each state shows up. tabyl also calculates the percentage.
+
+
+```{r}
+data2<-tabyl(data, state)
+data2 %>% 
+  arrange(desc(n))
+reactable(data2,bordered = TRUE, striped = TRUE,
+          highlight = TRUE, filterable = TRUE,  showPageSizeOptions = TRUE,
+          showPagination = TRUE, pageSizeOptions = c(10, 25,50),
+          defaultPageSize = 10)
+
+
+```
+
+
+<font size="5"> 
+Here's a graph of the data I calculated above.
+
+
+```{r, fig.width=15, fig.height=15}
+p <- ggplot(data2, aes(x=fct_rev(state), y=n))+
+    geom_bar(stat="identity")+ coord_flip()
+p
+```
+
+
+<font size="5"> 
+Using abbr2state from library usdata to transform the state abbreviations to state names
+
+
+```{r}
+library(usdata)
+data$fullstate <- abbr2state(data$state)
+head(data)
+```
+
+```{r}
+library(tidytext)
+library(wordcloud)
+set.seed(32)
+data %>%
+  unnest_tokens(word, fullstate) %>%
+  filter(!word %in% stop_words$word) %>% filter(word!="tk") %>% filter(word!="state") %>% filter(word!="county")%>%
+  count(word,sort = TRUE) %>%
+  ungroup() %>%
+  mutate(word = factor(word, levels = rev(unique(word)))) %>%
+  head(500) %>%
+  
+  with(wordcloud(word, n, max.words = 250, scale=c(4,.8), random.order = FALSE, colors=brewer.pal(2, "Dark2")))
+```
+
+
+<font size="5"> 
+I decided to review and use the data set from the article  "Where Police Have Killed Americans In 2015" by Ben Casselman. This articles focuses on the demographic and economic information of the neighborhoods where these police killings occurred. 
+
+Link:https://fivethirtyeight.com/features/where-police-have-killed-americans-in-2015/
+
+The share_black column represents the share of population that is black (alone, not in combination).
+The share_white column represents the share of population  that is non-Hispanic white.
+The share_hispanic column shows represents the share of population that is Hispanic/Latino (any race).
+The pov column shows the Tract-level poverty rate.
+
+I'm using it to calculate share of population avg and Tract-level poverty rate avg by state
+
+
+
+```{r}
+data4<-read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/police-killings/police_killings.csv")
+data4 <- na.omit(data4)
+
+##Creating new columns for averages
+data4$share_white_avg <- NA
+data4$share_white_avg <- as.integer(data4$share_white) 
+
+data4$share_black_avg <- NA
+data4$share_black_avg <- as.integer(data4$share_black) 
+
+data4$share_hispanic_avg <- NA
+data4$share_hispanic_avg <- as.integer(data4$share_hispanic) 
+
+##pov	Tract-level poverty avg by state
+data4$pov_avg <- NA
+data4$pov_avg <- as.integer(data4$pov) 
+
+head(data4)
+
+```
+
+<font size="5"> 
+Share population averages
+
+
+
+```{r}
+data5 <- data4 %>% 
+    group_by(state) %>%
+  summarise_at(vars(share_black_avg,share_hispanic_avg,share_white_avg), list(Avg = mean))
+
+data5 <- filter(data5,state == "CA"| state == "TX"| state == "FL"|state == "AZ" |state == "GA" | state == "CO"|state == "OH" |state == "NC" |state == "OK" |state == "WA")
+
+data5
+```
+
+
+<font size="5"> 
+Tract-level poverty rate averages
+
+
+```{r}
+data66 <- data4 %>% 
+    group_by(state) %>%
+  summarise_at(vars(pov_avg), list("Tract-level poverty rate AVG" = mean))
+
+data66 <- filter(data66,state == "CA"| state == "TX"| state == "FL"|state == "AZ" |state == "GA" | state == "CO"|state == "OH" |state == "NC" |state == "OK" |state == "WA")
+
+data66
+```
+
+
+<font size="5"> 
+In 2015, the top 10 states with the most deadly police shootings are all above the 2015 US poverty rate (13.5%)
+
+
+
+<font size="5"> 
+Conclusion:
+
+There is evidence to suggest that race/ethnicity and location can be factors that relate to or predict instances of police brutality. My analyses has found that certain racial groups and locations, particularly Black and Latinx communities, are more likely to be targeted and subjected to police violence than other groups.
+
+Moreover, location can also play a role, with some regions or neighborhoods experiencing higher rates of police brutality than others. For example, areas with higher poverty rates or higher crime rates may have higher instances of police violence.
+
+My study and others provide compelling evidence that race/ethnicity and location play a significant role in determining who experiences police brutality. However, it is important to note that police brutality is a complex issue, and there are many factors that contribute to it. It is not solely determined by race, but also by individual police officers' attitudes and behavior, as well as systemic issues within law enforcement and the criminal justice system as a whole.
+
+
